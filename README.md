@@ -5,6 +5,6 @@ bgc_utils is a collection of utilities for the Biome-BGC family of models. This 
 
 **Direct parameter variation driven experiments**: in development
 
-**MET File creation from NetCDF climate data**: in development
+**MET File creation from GCM climate data**: nc_to_mtc43.sh is a set of shell commands to convert GCM climate data in .nc files to .mtc43 for *BGC input 
 
 
