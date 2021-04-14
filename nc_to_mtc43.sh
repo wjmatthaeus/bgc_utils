@@ -196,3 +196,16 @@ done < landmask/${GLACIATION}_${CO2}_${O2}_LON_LAT.txt
 #      LAT="$(echo ${LON_LAT} | cut -d' ' -f2)"
 #      rm -r ${LON}_${LAT}
 # done < ${GLACIATION}_${CO2}_${O2}_LON_LAT.txt
+
+#combining years
+##NOTE if there are any other mtc43 files in these folders it will include them
+#remember to remove test.mtc43 or change input wildcard to exclude (more specific)
+mkdir allMETs_${GLACIATION}_${CO2}_${O2}
+while read LON_LAT; do
+     LON="$(echo ${LON_LAT} | cut -d' ' -f1)"
+     LAT="$(echo ${LON_LAT} | cut -d' ' -f2)"
+    awk '
+        FNR==1 && NR!=1 { while (/^Yearday/) getline; }
+        1 {print}
+    ' ${LON}_${LAT}/*.mtc43 > allMETs_${GLACIATION}_${CO2}_${O2}/${GLACIATION}_${CO2}_${O2}_${LON}_${LAT}.mtc43
+done < landmask/${GLACIATION}_${CO2}_${O2}_LON_LAT.txt
