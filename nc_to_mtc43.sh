@@ -183,7 +183,7 @@ for YEAR in $(seq 41 50); do
 #     LON="$(echo ${LON_LAT} | cut -d' ' -f1)"
 #     LAT="$(echo ${LON_LAT} | cut -d' ' -f2)"
 ##############Change path
- Rscript --vanilla /path/to/makingMtclim.R ${GLACIATION}_${CO2}_${O2}_${LON}_${LAT}_${YEAR}_noVPD.tsv
+ Rscript --vanilla /path/to/tsv_to_Mtclim.R ${GLACIATION}_${CO2}_${O2}_${LON}_${LAT}_${YEAR}_noVPD.tsv
 
 done
  cd ..
