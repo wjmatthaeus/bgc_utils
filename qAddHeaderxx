@@ -1,0 +1,9 @@
+#WJ Matthaeus 04-2022, script to add header to output of cesm_to_mtc43.ncl
+cd /data/matthaeusw/CESM2BGC_270121_source/metsWork_CESM2BGC_2xC_030422o
+
+find /data/matthaeusw/CESM2BGC_270121_source/metsWork_CESM2BGC_2xC_030422 -maxdepth 1 -type f -name "*.mtc43NH" -exec sh -c '
+echo "Missoula, 1984 : Sample input for MTCLIM v4.3
+MTCLIM v4.3 format. Converted from CESM NetCDF output. <https://github.com/wjmatthaeus/bgc_utils>
+ yday    Tmax    Tmin    Tday    prcp      VPD     srad  daylen
+      (deg C) (deg C) (deg C)    (cm)     (Pa)  (W m-2)     (s)" | cat - $0 > $0.new
+' {} \;
