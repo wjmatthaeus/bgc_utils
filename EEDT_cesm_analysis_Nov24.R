@@ -12,15 +12,15 @@ vapply(pkgs, library, logical(1), character.only = TRUE, logical.return = TRUE)
 # whittaker_base_plot()
 
 ##workd for Ecosystem Engineers in Deep Time special issue paper
-location<-"/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/"
+location<-"/path/to/EcosystemEngineers2024/"
 setwd(location)
 
 ######Model update (stem2) run on SIM data from CESM. Statistics calculated per simulation on daily data using binary_grid_data_processing_kodiak.R
 
-#data import and basic variables
+#data import and basic variables from .RDS created by "binary_grid_data..R" can be skipped by reading in EEDT24_data.csv
 if(TRUE){
 
-annual_means <- readRDS(file="dayouts_092424/allDayoutsSummary_CESM_stemBGC_24Sept2024.RDS")
+annual_means <- readRDS(file="path/to/binary_grid_data_processing/my.RDS")
 #
  unique(annual_means$Genus)
 
@@ -134,7 +134,7 @@ if(TRUE){
   # calculate global and grid-wise area, check distributions are the same
  
 core_means %>% group_by(co2_f, Genus) %>% summarize(count = n())
-# formatC(total_area, format = 'e', digits = 2)
+
 modern_land_area<-144680000#from Ding et al. 2020: 10.1029/2020EF001618
 modern_veg_land_area<-103900000
 formatC(modern_veg_land_area, format = 'e', digits = 2)
@@ -143,14 +143,12 @@ paleo_per_mod_total_area <- total_area/modern_land_area
 core_means%>%filter(epv.proj_lai_median>0.1)%>%
     group_by(co2_f,Genus)%>%
     summarize(
-              # vegcXArea=sum(Area*vegc_median*1e6*1e-12),#m^-2 -> km^-2, kg to Pg,
-              # vegcXAreaPMod=sum(Area*vegc_median)*1e6*1e-12/408,# /PgC modern (408 gt): nature.com/articles/s41597-020-0444-4
               vegArea=sum(Area)/1e6,
               vegArea_P_paleoLandArea=100*sum(Area)/total_area,
               vegArea_P_modVegArea=100*sum(Area)/modern_veg_land_area,
               # count=n()
               )
-# unique(core_means$Group)
+
 
 lep_sw <- core_means %>% filter(Genus == "lepidodendron") %>% 
   group_by(co2_f)%>%
@@ -169,19 +167,7 @@ sw_280 <- core_means %>% filter(co2_f == "280") %>%
  sw_levels <- c("Arborescent Lycopsid" , "Tree Fern" ,"Early Diverging Conifer")
  sw_levels <- c("lepidodendron","treefern","cordaites")
 
-# soilwater_lep<-core_means%>%filter(Group %in% sw_levels)%>%left_join(lep_sw, by = c("co2_f"))%>%
-#     group_by(co2_f,Group)%>%
-#     mutate(Group= factor(Group, levels=sw_levels))
-#     
-# soilwater_lep %>% summarize(
-#             swMean=mean(soilw_mean),
-#             swoMean=mean(soilw_outflow_mean),
-#             swMean_P_change=100*(1-mean(soilw_mean)/mean(lepSwMean)),
-#             swoMean_P_change=100*(1-mean(soilw_outflow_mean)/mean(lepSwoMean)))
-# 
-# soilwater_lep<-core_means%>%filter(Group %in% sw_levels)%>%left_join(lep_sw, by = c("co2_f"))%>%
-#   group_by(co2_f,Group)%>%
-#   mutate(Group= factor(Group, levels=sw_levels))            
+         
 
 core_means%>%filter(Genus %in% sw_levels)%>%
   pivot_wider(id_cols = c("co2_f","Lat","Lon"),names_from  = c("Genus"), values_from = c("soilw_outflow_mean","soilw_mean","Area"))%>%
@@ -207,37 +193,15 @@ core_means%>%filter(Genus %in% sw_levels)%>%
   summarize(  sw_co2_2x = mean(sw_p_280_local,na.rm=T)/mean(Area_280),
               swo_co2_2x = mean(swo_p_280_local,na.rm=T)/mean(Area_280))
 
-# soilwater_co2 %>% summarize(
-#   swMean=mean(soilw_mean),
-#   swoMean=mean(soilw_outflow_mean),
-#   swMean_P_change=100*(1-mean(soilw_mean)/mean(lowSwMean)),
-#   swoMean_P_change=100*(1-mean(soilw_outflow_mean)/mean(lowSwoMean)))
-
-
-
 
 
 }
 
 #vegetation cover by Genus
 if(TRUE){
-   #make an single plot for lai to automatically generate unified fill color scales
-  # pilot_plot <- ggplot(data=annual_means)+
-  #   geom_tile(aes(x=Lon, y=Lat, fill=epv.proj_lai))+ 
-  #   scale_fill_stepsn(n.breaks=10, colors=viridis(7),)+theme_minimal()#options A-H
-  # 
-  # g <- ggplot_build(pilot_plot)
-  # unique(g$data[[1]]["fill"])
-  # 
-  # ggplot(data+annual_means)+geom_density(aes(x=epv.proj_lai))
+
   hist(annual_means[which(annual_means$tmin_min< -40),]$tmin_sd, breaks=100)
  
-  # v <- seq(0.0,0.9,0.1)
-  # q <- floor(unname(quantile(core_means$epv.proj_lai_median, probs = v)))
-  # l <- seq(q[1],q[length(q)],1)
-  # o <- c(0.1,l[length(l)])
-  # 
-  # clr<-c(viridis(length(l)))
   
   pA <- core_means%>%ggplot()+
     geom_tile(aes(x=Lon, y=Lat, fill=epv.proj_lai_median))+ 
@@ -254,7 +218,7 @@ if(TRUE){
     facet_grid(Group~co2_f)
   
   plotName<-paste("core_CESM_St2_lai.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 22, width = 17, units = c("in"),
          dpi = 300, limitsize = FALSE)
 
@@ -275,29 +239,11 @@ if(TRUE){
             facet_grid(Genus~co2_f)
  
   plotName<-paste("sphen_CESM_St2_zeroLai.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 22, width = 17, units = c("in"),
          dpi = 300, limitsize = FALSE)
   
-  ###pbdb comparison
-  # pA <- core_means%>%ggplot()+
-  #   geom_tile(aes(x=Lon, y=Lat, fill=epv.proj_lai_median))+ 
-  #   geom_point(data=pbdb_data, aes(x=Lon+160, y=Lat), color="red")+#size=.25*((75-abs(Lat))/75)),,shape=15
-  #   geom_path(data=m_fort, aes(x = long, y = lat, group = group),linewidth =1, col="black")+
-  #   scale_fill_gradientn(colors=viridis(6),limits=c(0.1,max(core_means$epv.proj_lai_median)))+theme_minimal()+ ##options A-H #values = v, breaks=l,
-  #   theme(text = element_text(size=30), 
-  #         legend.position = 'bottom', legend.key.width = unit(2,'in'),
-  #         axis.text.x=element_blank())+#, legend.key.width = unit(1,'in')
-  #   guides(fill=guide_colorbar(title=""))+
-  #   labs(x="")+
-  #   facet_grid(Group~co2_f)
-  # 
-  # plotName<-paste("pbdb_core_CESM_St2_lai.png")
-  # ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
-  #        scale = 1, height = 22, width = 17, units = c("in"),
-  #        dpi = 300, limitsize = FALSE)
-  
-  
+
   ## all fossils from pdbd
   pA <- annual_means%>%filter(Group=="Early Diverging Conifer")%>%ggplot()+
     geom_tile(aes(x=Lon, y=Lat, fill=prcp_mean*365/10))+ 
@@ -313,7 +259,7 @@ if(TRUE){
     facet_grid(.~co2_f)
   
   plotName<-paste("pbdb_all_CESM_MAP.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 7, width = 14, units = c("in"),
          dpi = 300, limitsize = FALSE)
   
@@ -334,17 +280,11 @@ if(TRUE){
     facet_grid(Genus~co2xmodern)
   
   plotName<-paste("CESM_St2_vegc.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024//",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024//",
          scale = 1, height = 160, width = 15, units = c("in"),
          dpi = 300, limitsize = FALSE)
   
-  
  
-   # clr<-c( "#440154FF", "#482878FF", "#3E4A89FF" ,"#31688EFF", "#26828EFF" ,"#1F9E89FF", "#35B779FF",
-  #  "#6DCD59FF" ,"#B4DE2CFF" ,"#FDE725FF")
-    # scale_fill_gradientn(colors=clr,values = v, breaks=l, limits=o)+
-  # scale_fill_stepsn(n.breaks=10, colors=viridis(10))+
- #one step closer to loop generating things with the same scales. 
   for(g in genera){
    #unify scales
    # g <- "treefern"
@@ -361,7 +301,7 @@ if(TRUE){
      facet_wrap(.~co2xmodern, ncol=1)
    
    plotName<-paste(g,"_CESM_St2_lai.png")
-   ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024//",
+   ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024//",
           scale = 1, height = 25, width = 15, units = c("in"),
           dpi = 300, limitsize = TRUE)
  }
@@ -395,18 +335,13 @@ if(TRUE){
       facet_grid(Genus~co2_f)
     
     plotName<-paste("core_CESM_St2_m3_max_runoff.png")
-    ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+    ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
            scale = 1, height = 22, width = 17, units = c("in"),
            dpi = 300, limitsize = FALSE)
     
   }
   
-  # v <- seq(0.0,0.9,0.1)
-  # q <- floor(unname(quantile(core_means$epv.proj_lai_median, probs = v)))
-  # l <- seq(q[1],q[length(q)],1)
-  # o <- c(0.1,l[length(l)])
-  # 
-  # clr<-c(viridis(length(l)))
+  
   #percent change sw and runoff
   if(TRUE){
   water_pc <- core_means %>% 
@@ -435,7 +370,7 @@ if(TRUE){
   
   
   plotName<-paste("core_CESM_St2_PC_runoff_lepToTF.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 22, width = 17, units = c("in"),
          dpi = 300, limitsize = FALSE)
   }
@@ -462,7 +397,7 @@ if(TRUE){
           axis.line = element_blank(), panel.grid.major = element_blank())
   # c(min(water$m3_total_runoff_lepToTF, na.rm = F), 0, max(water$m3_total_runoff_lepToTF, na.rm = F)
   plotName<-paste("core_CESM_St2_m3_total_runoff_lepToTF_hist.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 3, width = 5, units = c("in"),
          dpi = 300, limitsize = FALSE)
   
@@ -473,21 +408,11 @@ if(TRUE){
           axis.ticks.y = element_blank(), panel.grid = element_blank(),
           axis.line = element_blank(), panel.grid.major = element_blank())
   plotName<-paste("core_CESM_St2_m3_max_runoff_lepToTF_hist.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 3, width = 5, units = c("in"),
          dpi = 300, limitsize = FALSE)
   }
-  #some palettes
-  # colors_top<-rev(plasma(10))
-  #  c("#F0F921FF" ,"#FCA636FF" ,"#E16462FF" ,"#B12A90FF", "#6A00A8FF", "#0D0887FF")
-  #  "#F0F921FF" "#FDC926FF" "#FA9E3BFF" "#ED7953FF" "#D8576BFF"
-  #   "#BD3786FF" "#9C179EFF" "#7301A8FF" "#47039FFF" "#0D0887FF"
-  # # colors_bottom<-viridis(6)
-  # c("#000004FF" ,"#3B0F70FF", "#8C2981FF" ,"#DE4968FF", "#FE9F6DFF", "#FCFDBFFF")
-  #  c( "#440154FF" ,"#414487FF", "#2A788EFF", "#22A884FF", "#7AD151FF" ,"#FDE725FF")
-  # # # rocket(10)
-  #  c("#03051AFF", "#4C1D4BFF", "#A11A5BFF" ,"#E83F3FFF", "#F69C73FF", "#FAEBDDFF")
-  
+
   #  runoff colors
   if(TRUE){
   colors<-c("#DE4968FF","#DE4968FF", "#FE9F6DFF", "#FCFDBFFF","white","lightsteelblue1","lightsteelblue3", "#0D0887FF")
@@ -519,7 +444,7 @@ if(TRUE){
     facet_grid(.~co2_f)
   
   plotName<-paste("core_CESM_St2_m3_total_runoff_lepToTF.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 22, width = 17, units = c("in"),
          dpi = 300, limitsize = FALSE)
   
@@ -540,8 +465,7 @@ if(TRUE){
    water_co2 <- water_co2 %>% filter(m3_total_runoff_560to280 > -100000)
    
    summary(water_co2)
-    # hist(as.numeric(core_means$soilw_outflow_mean))
-    # hist(water_co2$m3_total_runoff_560to280)
+  
     if(TRUE){
       pA<-ggplot()+geom_histogram(data=water_co2, aes(x=m3_total_runoff_560to280),fill="black",bins = 55)+
         geom_vline(xintercept =0,color="white")+theme_minimal()+
@@ -549,9 +473,9 @@ if(TRUE){
               axis.title.y = element_blank(), axis.text.y = element_blank(),
               axis.ticks.y = element_blank(), panel.grid = element_blank(),
               axis.line = element_blank(), panel.grid.major = element_blank())
-      # c(min(water$m3_total_runoff_lepToTF, na.rm = F), 0, max(water$m3_total_runoff_lepToTF, na.rm = F)
+  
       plotName<-paste("core_CESM_St2_m3_total_runoff_560to280_hist.png")
-      ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+      ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
              scale = 1, height = 3, width = 5, units = c("in"),
              dpi = 300, limitsize = FALSE)
       
@@ -562,14 +486,13 @@ if(TRUE){
               axis.ticks.y = element_blank(), panel.grid = element_blank(),
               axis.line = element_blank(), panel.grid.major = element_blank())
       plotName<-paste("core_CESM_St2_m3_max_runoff_560to280_hist.png")
-      ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+      ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
              scale = 1, height = 3, width = 5, units = c("in"),
              dpi = 300, limitsize = FALSE)
     }
     # runoff colors
     if(TRUE){
       colors<-c("#DE4968FF","#DE4968FF", "#FE9F6DFF", "#FCFDBFFF","white","lightsteelblue1","lightsteelblue3", "#0D0887FF")
-      # colors_ext<-c(colors[1],colors,colors[6])
       
       this_var <- water_co2$m3_max_runoff_560to280
       this_sd<-sd(this_var, na.rm=TRUE)
@@ -598,7 +521,7 @@ if(TRUE){
       facet_grid(.~Genus)
     
     plotName<-paste("core_CESM_St2_m3_max_runoff_560to280.png")
-    ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+    ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
            scale = 1, height = 22, width = 17, units = c("in"),
            dpi = 300, limitsize = FALSE)
     
@@ -637,7 +560,6 @@ if(TRUE){
      
     if(TRUE){
       colors<-c("#DE4968FF","#DE4968FF", "#FE9F6DFF", "#FCFDBFFF","white","lightsteelblue1","lightsteelblue3", "#0D0887FF")
-      # colors_ext<-c(colors[1],colors,colors[6])
       
       this_var <- temp$value
       this_sd<-sd(this_var, na.rm=TRUE)
@@ -666,7 +588,7 @@ if(TRUE){
     facet_grid(.~contrast)
   
   plotName<-paste("core_CESM_St2_",i,".png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 22, width = 17, units = c("in"),
          dpi = 300, limitsize = FALSE)
   }
@@ -686,13 +608,10 @@ if(TRUE){
       lai_560to280 = `280`-`560`      )
     
   
-  # 
-  # lai_change_Co2%>%filter(Genus=="treefern")%>%ggplot()+geom_histogram(aes(x=lai_560to280))
-  # mean(lai_change_Co2$lai_560to280,  na.rm=T)
-
+ 
   if(TRUE){
     delLai_colors<-c("brown","#FE9F6DFF","goldenrod2","white","white","lightgreen","green", "darkgreen")
-    # colors_ext<-c(colors[1],colors,colors[6])
+
     delLai_colors<-c("brown","brown","white","darkgreen", "darkgreen")
     this_var <- lai_change_Co2$lai_560to280
     this_sd<-sd(this_var, na.rm=TRUE)
@@ -727,7 +646,7 @@ if(TRUE){
     facet_grid(Group~.)
   
   plotName<-paste("delLai_byGroup_560to280.png")
-  ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+  ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
          scale = 1, height = 22, width = 17, units = c("in"),
          dpi = 300, limitsize = FALSE)
   
@@ -752,7 +671,7 @@ if(TRUE){
       facet_grid(.~contrast)
     
     plotName<-paste("core_CESM_St2_",i,".png")
-    ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+    ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
            scale = 1, height = 22, width = 17, units = c("in"),
            dpi = 300, limitsize = FALSE)
   }
@@ -827,7 +746,7 @@ if(TRUE){
    
    
    plotName<-paste("dprecip_mean_cm.png")
-   ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+   ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
           scale = 1, height = 10, width = 17, units = c("in"),
           dpi = 300, limitsize = FALSE)
   
@@ -862,7 +781,7 @@ if(TRUE){
    
    
    plotName<-paste("dprecip_cv_cm.png")
-   ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+   ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
           scale = 1, height = 10, width = 17, units = c("in"),
           dpi = 300, limitsize = FALSE)
      
@@ -897,7 +816,7 @@ if(TRUE){
    
    
    plotName<-paste("dprecip_max_cm.png")
-   ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+   ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
           scale = 1, height = 10, width = 17, units = c("in"),
           dpi = 300, limitsize = FALSE)
      
@@ -922,7 +841,7 @@ if(TRUE){
      facet_grid(stat~co2_f, scales = "free_y")
    
    plotName<-paste("precip_stats.png")
-   ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+   ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
           scale = 1, height = 22, width = 17, units = c("in"),
           dpi = 300, limitsize = FALSE)}
    
@@ -960,45 +879,13 @@ if(TRUE){
        facet_grid(stat~co2_f)
      
      plotName<-paste("precip_stats_cm.png")
-     ggsave(plotName, plot = pA, device = "png", path = "/Users/willmatthaeus/Dropbox/bgc_work/stem_bgc/EcosystemEngineers2024/",
+     ggsave(plotName, plot = pA, device = "png", path = "/EcosystemEngineers2024/",
             scale = 1, height = 22, width = 17, units = c("in"),
             dpi = 300, limitsize = FALSE)
   
    
    }
    
-   #Convert mass to meteoroligcal
-  # temp_raw_SWO_total<-sum(temp$SWO)
-   #also metvar precp
-  #SWO from BGC: kgH2O/m2/d
-  #time             * 365 d -> kgH2O/m2/y
-  #
-  # water           * 1 mm/kg/m2 * .1 cm/mm -> cm H2O/m2/y
-  #or
-  #                 * 1/1000 m3/kg -> m3/m2/year
-  
-  
-  # #Convert precip. meterological units to mass or volume per year
-  # cm/m2/d
-  #   *365 d/y
-  #
-  #   *1/100 m/cm -> m3 H20/y
-  # or
-  #   *10 kg/cm/m2 --> kg H20/m2/y
-
-  #integrate in #space
-  #                 * m2/grid cell -> cm H20/y  for maps or
-  #                                   m3/y      for by lat plots
-   
-  #calculate and plot separately
-   
-  
-  
-  
- 
- 
-
-  
 }    
 
 #low vs met
@@ -1047,15 +934,6 @@ if(TRUE){
             filter(dayl_median>minDayl)
   
   
-    # geom_path(data=m_fort, aes(x = long, y = lat, group = group),linewidth =1, col="black")+
-    # scale_fill_gradientn(colors=viridis(6),limits=c(0.1,max(core_means$epv.proj_lai_median)))+theme_minimal()+ ##options A-H #values = v, breaks=l,
-    # theme(text = element_text(size=30), 
-    #       legend.position = 'bottom', legend.key.width = unit(2,'in'),
-    #       axis.text.x=element_blank())+#, legend.key.width = unit(1,'in')
-    # guides(fill=guide_colorbar(title=""))+
-    # labs(x="")
-  
-  
 }
 
 ##survivors
@@ -1072,11 +950,7 @@ if(TRUE){
   survivor_spatial_summary_tt <- annual_means %>% group_by(Lon, Lat, Tracheid_type, co2xmodern) %>% filter(epv.proj_lai>0.1) %>%
     dplyr::summarise(survivors = list(unique(Genus)), n_survivors = length(unlist(survivors))) 
   
-  
-  
-  # survivor_spatial_summary %>% mutate(survivor_s = paste(unlist(survivors)))
-  
-  survivor_spatial_summary <- survivor_spatial_summary %>% mutate(survivor_f = as.factor(paste(unlist(survivors), collapse = ", ")))
+   survivor_spatial_summary <- survivor_spatial_summary %>% mutate(survivor_f = as.factor(paste(unlist(survivors), collapse = ", ")))
   survivor_spatial_summary_tt <- survivor_spatial_summary_tt %>% mutate(survivor_f = as.factor(paste(unlist(survivors), collapse = ", ")))
   
   
@@ -1232,19 +1106,12 @@ if(TRUE){
 ##Whitaker charts with CESM colored by survival
 if(TRUE){
   
-  # rm(mean_mets)
-  # unique(stats$fSimset)
-  # mutate(TimeAndPlace = paste0(Lat,Lon,co2xmodern, sep=" ")) %>% 
   clr <- viridis(6)
   clr <- c(clr, "#FDE725FF","#FDE725FF","#FDE725FF")
   mean_mets <- core_means %>% filter(epv.proj_lai_median>0.1) %>% 
     mutate(loc = paste(Lat,Lon))%>%
     group_by(loc,co2_f,Genus)%>%
     summarize(precp_cm=mean(prcp_mean)*365/10, temp_c=mean(tavg_mean), lai = mean(epv.proj_lai_median))
-  
-  # library(data.table)
-  # annual_means %>% mutate(loc = paste(Lat,Lon)) %>% group_by(co2xmodern) %>% arrange(desc(vegc), .by_group = TRUE) %>% 
-  #   dplyr::summarize(maxrows = which.max(vegc))
   
   for(g in unique(mean_mets$Genus)){
     temp<-mean_mets%>%filter(Genus==g)
