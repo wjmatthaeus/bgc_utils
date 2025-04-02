@@ -11,4 +11,4 @@ bgc_utils is a collection of utilities for the Biome-BGC family of models. This 
 
 **binary_grid_..R** processes a directory of binary outputs produced by running x_BGC using x_Launcher.sh
 
-**EEDT_cesm..R** reproduces the analysis for the above manuscript using the data hosted at osf.io
+**EEDT_cesm..R** reproduces the analysis for the manuscript Matthaeus et al. "Vegetation turnovers reduced water availability during the last icehouse" using the data hosted at osf.io
